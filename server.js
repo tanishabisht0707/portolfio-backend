@@ -22,6 +22,8 @@ app.get("/", (req, res) => {
   res.send("portfolio backend is running.");
 });
 
+app.use('/api/contact' , contactRoutes )
+
 const startServer = async () => {
   await connectDB();
 
@@ -32,4 +34,3 @@ const startServer = async () => {
 
 startServer();
 
-app.use('/api/contact' , contactRoutes )
