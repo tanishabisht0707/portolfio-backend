@@ -1,51 +1,53 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-// Email notification to portfolio owner
+// Email notification to you
 export const sendNotificationEmail = async (contact) => {
-  await transporter.sendMail({
-    from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
+  const { name, email, subject, message } = contact;
+
+  const { data, error } = await resend.emails.send({
+    from: "Portfolio Contact <onboarding@resend.dev>",
     to: process.env.EMAIL_USER,
-    replyTo: contact.email,
-    subject: `New Portfolio Message: ${contact.subject}`,
-
-    text: `
-You have received a new message from your portfolio.
-
-Name: ${contact.name}
-Email: ${contact.email}
-Subject: ${contact.subject}
-
-Message:
-${contact.message}
+    subject: `New Portfolio Message: ${subject}`,
+    html: `
+      <h2>New Contact Form Message</h2>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <p><strong>Message:</strong></p>
+      <p>${message}</p>
     `,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 // Confirmation email to the visitor
 export const sendConfirmationEmail = async (contact) => {
-  await transporter.sendMail({
-    from: `"Tanisha Bisht" <${process.env.EMAIL_USER}>`,
-    to: contact.email,
+  const { name, email, subject } = contact;
+
+  const { data, error } = await resend.emails.send({
+    from: "Portfolio Contact <onboarding@resend.dev>",
+    to: email,
     subject: "Thank you for contacting me!",
-
-    text: `
-Hi ${contact.name},
-
-Thank you for reaching out through my portfolio.
-
-I have received your message and will get back to you as soon as possible.
-
-Best regards,
-Tanisha Bisht
+    html: `
+      <h2>Hello ${name},</h2>
+      <p>Thank you for contacting me through my portfolio.</p>
+      <p>I have received your message regarding <strong>${subject}</strong>.</p>
+      <p>I will get back to you soon.</p>
+      <br />
+      <p>Regards,<br />Tanisha</p>
     `,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
