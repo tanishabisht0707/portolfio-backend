@@ -2,10 +2,7 @@
 import express from "express";
 import Contact from "../models/contact.js";
 
-import {
-  sendNotificationEmail,
-  sendConfirmationEmail,
-} from "../service/emailService.js";
+import { sendNotificationEmail } from "../service/emailService.js";
 
 const router = express.Router();
 
@@ -31,8 +28,6 @@ router.post("/", async (req, res) => {
     // Send email notification to you
     await sendNotificationEmail(newContact);
 
-    // Send confirmation email to visitor
-    await sendConfirmationEmail(newContact);
 
     return res.status(201).json({
       success: true,

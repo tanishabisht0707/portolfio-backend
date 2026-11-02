@@ -1,30 +1,51 @@
+import nodemailer from "nodemailer";
 
-import { Resend } from "resend";
+const transporter = nodemailer.createTransport({
+  service: "gmail",
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
+// Email notification to portfolio owner
 export const sendNotificationEmail = async (contact) => {
-  const { name, email, subject, message } = contact;
+  await transporter.sendMail({
+    from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
+    to: process.env.EMAIL_USER,
+    replyTo: contact.email,
+    subject: `New Portfolio Message: ${contact.subject}`,
 
-  const { data, error } = await resend.emails.send({
-    from: "Portfolio Contact <onboarding@resend.dev>",
-    to: "tanishabisht007@gmail.com",
-    subject: `New Portfolio Message: ${subject}`,
-    html: `
-      <h2>You received a new portfolio message</h2>
+    text: `
+You have received a new message from your portfolio.
 
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Subject:</strong> ${subject}</p>
+Name: ${contact.name}
+Email: ${contact.email}
+Subject: ${contact.subject}
 
-      <p><strong>Message:</strong></p>
-      <p>${message}</p>
+Message:
+${contact.message}
     `,
   });
+};
 
-  if (error) {
-    throw new Error(error.message);
-  }
+// Confirmation email to the visitor
+export const sendConfirmationEmail = async (contact) => {
+  await transporter.sendMail({
+    from: `"Tanisha Bisht" <${process.env.EMAIL_USER}>`,
+    to: contact.email,
+    subject: "Thank you for contacting me!",
 
-  return data;
+    text: `
+Hi ${contact.name},
+
+Thank you for reaching out through my portfolio.
+
+I have received your message and will get back to you as soon as possible.
+
+Best regards,
+Tanisha Bisht
+    `,
+  });
 };
